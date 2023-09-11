@@ -1,3 +1,4 @@
+import argparse
 import os
 import random
 import secrets
@@ -14,6 +15,170 @@ from PIL import Image, ImageDraw, ImageFont
 # 200 = plate_class
 # か　= plate_hira
 # 10-74 = plate_number
+
+HIRAGANA = [
+    "あ",
+    "い",
+    "う",
+    "え",
+    "か",
+    "き",
+    "く",
+    "け",
+    "こ",
+    "さ",
+    "す",
+    "せ",
+    "そ",
+    "た",
+    "ち",
+    "つ",
+    "て",
+    "と",
+    "な",
+    "に",
+    "ぬ",
+    "ね",
+    "の",
+    "は",
+    "ひ",
+    "ふ",
+    "ほ",
+    "ま",
+    "み",
+    "む",
+    "め",
+    "も",
+    "ら",
+    "り",
+    "る",
+    "れ",
+    "ろ",
+    "や",
+    "ゆ",
+    "よ",
+    "わ",
+    "を",
+]
+
+ISSUING_OFFICE = [
+    "尾張小牧",
+    "一宮",
+    "春日井",
+    "名古屋",
+    "豊橋",
+    "三河",
+    "岡崎",
+    "豊田",
+    "秋田",
+    "青森",
+    "八戸",
+    "千葉",
+    "成田",
+    "習志野",
+    "野田",
+    "柏",
+    "袖ヶ浦",
+    "愛媛",
+    "福井",
+    "福岡",
+    "筑豊",
+    "北九州",
+    "久留米",
+    "福島",
+    "会津",
+    "郡山",
+    "いわき",
+    "岐阜",
+    "飛騨",
+    "群馬",
+    "前橋",
+    "高崎",
+    "福山",
+    "広島",
+    "旭川",
+    "函館",
+    "北見",
+    "釧路",
+    "室蘭",
+    "帯広",
+    "札幌",
+    "姫路",
+    "神戸",
+    "水戸",
+    "土浦",
+    "つくば",
+    "石川",
+    "金沢",
+    "岩手",
+    "平泉",
+    "盛岡",
+    "香川",
+    "鹿児島",
+    "奄美",
+    "相模",
+    "湘南",
+    "川崎",
+    "横浜",
+    "高知",
+    "熊本",
+    "京都",
+    "三重",
+    "鈴鹿",
+    "宮城",
+    "仙台",
+    "宮崎",
+    "松本",
+    "諏訪",
+    "長野",
+    "長崎",
+    "佐世保",
+    "奈良",
+    "長岡",
+    "新潟",
+    "大分",
+    "岡山",
+    "倉敷",
+    "沖縄",
+    "和泉",
+    "堺",
+    "大阪",
+    "なにわ",
+    "佐賀",
+    "春日部",
+    "越谷",
+    "熊谷",
+    "大宮",
+    "川口",
+    "所沢",
+    "川越",
+    "滋賀",
+    "島根",
+    "浜松",
+    "沼津",
+    "富士山",
+    "伊豆",
+    "静岡",
+    "栃木",
+    "宇都宮",
+    "那須",
+    "徳島",
+    "足立",
+    "八王子",
+    "多摩",
+    "練馬",
+    "杉並",
+    "品川",
+    "世田谷",
+    "鳥取",
+    "富山",
+    "和歌山",
+    "庄内",
+    "山形",
+    "山口",
+    "下関",
+    "山梨",
+]
 
 
 class Plate:
@@ -287,51 +452,7 @@ def _generate_random_v_number():
 
 
 def _generate_random_hiragana():
-    hiragana = [
-        "あ",
-        "い",
-        "う",
-        "え",
-        "か",
-        "き",
-        "く",
-        "け",
-        "こ",
-        "さ",
-        "す",
-        "せ",
-        "そ",
-        "た",
-        "ち",
-        "つ",
-        "て",
-        "と",
-        "な",
-        "に",
-        "ぬ",
-        "ね",
-        "の",
-        "は",
-        "ひ",
-        "ふ",
-        "ほ",
-        "ま",
-        "み",
-        "む",
-        "め",
-        "も",
-        "ら",
-        "り",
-        "る",
-        "れ",
-        "ろ",
-        "や",
-        "ゆ",
-        "よ",
-        "わ",
-        "を",
-    ]
-    return hiragana[random.randint(0, 41)]
+    return HIRAGANA[random.randint(0, 41)]
 
 
 def _generate_plate(hiragana, set_count):
@@ -374,6 +495,78 @@ def _generate_plate_v_class(v_class_length, set_count):
 
 
 if __name__ == "__main__":
-    os.makedirs("./output", exist_ok=True)
-    v_class_length = 1
-    _generate_plate_v_class(v_class_length, 1)
+    parser = argparse.ArgumentParser(
+        description="Generate synthetic Japanese vehicle number plate. "
+    )
+    issuing_office_group = parser.add_mutually_exclusive_group(required=True)
+    issuing_office_group.add_argument(
+        "--issuing-office-random",
+        help="Set the issuing office to random. ",
+        dest="issuing_office_random",
+        action="store_true",
+    )
+    issuing_office_group.add_argument(
+        "--issuing-office",
+        help="Set the issuing office manually. ",
+        choices=ISSUING_OFFICE,
+        dest="issuing_office",
+    )
+
+    vehicle_class_group = parser.add_mutually_exclusive_group(required=True)
+    vehicle_class_group.add_argument(
+        "--vehicle-class-random",
+        help="Set the vehicle class to random. ",
+        dest="vehicle_class_random",
+        action="store_true",
+    )
+    vehicle_class_group.add_argument(
+        "--vehicle-class",
+        help="Set the vehicle class manually. ",
+        choices=[1, 2, 3, 4, 5],
+        dest="vehicle_class",
+    )
+    parser.add_argument(
+        "--vehicle-class-length",
+        help="Set the vehicle class length. Will be ignored if --vehicle-class is defined. ",
+        choices=[1, 2, 3],
+        dest="vehicle_class_length",
+        required=True,
+    )
+    hiragana_group = parser.add_mutually_exclusive_group(required=True)
+    hiragana_group.add_argument(
+        "--hiragana-random",
+        help="Set the hiragana to random. ",
+        dest="hiragana_random",
+        action="store_true",
+    )
+    hiragana_group.add_argument(
+        "--hiragana-",
+        help="Set the hiragana manually. ",
+        choices=HIRAGANA,
+        dest="hiragana",
+    )
+    number_group = parser.add_mutually_exclusive_group(required=True)
+    number_group.add_argument(
+        "--number-random",
+        help="Set the number to random. ",
+        dest="number_random",
+        action="store_true",
+    )
+    number_group.add_argument(
+        "--number", help="Set the number manually. ", dest="number"
+    )
+    parser.add_argument(
+        "--number-length",
+        help="Set the number length. Will be ignored if --number-random is defined. ",
+        choices=[1, 2, 3, 4],
+        dest="number",
+    )
+    parser.add_argument(
+        "--count",
+        help="Number of plates to generate. ",
+        dest="count",
+        type=int,
+        required=True,
+    )
+    args = parser.parse_args()
+    print(args)
