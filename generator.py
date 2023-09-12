@@ -443,12 +443,19 @@ def _generate_random_v_class_num():
 
 
 def _generate_random_office():
-    choice = [*Plate.LIST_FZ_LTO_ABBR]
-    return random.choice(choice)
+    return random.choice(ISSUING_OFFICE)
 
 
-def _generate_random_v_number():
-    return str(random.randint(0, 9999))
+def _generate_random_v_number(length):
+    if length == 1:
+        return str(random.randint(1, 9))
+    if length == 2:
+        return str(random.randint(10, 99))
+    if length == 3:
+        return str(random.randint(100, 999))
+    if length == 4:
+        return str(random.randint(1000, 9999))
+    raise ValueError("Length has to be between 1 to 9999")
 
 
 def _generate_random_hiragana():
@@ -474,6 +481,8 @@ def _generate_random_v_class_and_number(length):
     if length == 3:
         return _generate_random_v_class() + str(random.randint(10, 99))
 
+def _generate_random_plate():
+    return random.randint(1, 5)
 
 def _generate_plate_v_class(v_class_length, set_count):
     for plate_type in range(1, 6):
@@ -522,7 +531,6 @@ if __name__ == "__main__":
     vehicle_class_group.add_argument(
         "--vehicle-class",
         help="Set the vehicle class manually. ",
-        choices=[1, 2, 3, 4, 5],
         dest="vehicle_class",
     )
     parser.add_argument(
@@ -541,7 +549,7 @@ if __name__ == "__main__":
         action="store_true",
     )
     hiragana_group.add_argument(
-        "--hiragana-",
+        "--hiragana",
         help="Set the hiragana manually. ",
         choices=HIRAGANA,
         dest="hiragana",
@@ -554,15 +562,29 @@ if __name__ == "__main__":
         action="store_true",
     )
     number_group.add_argument(
-        "--number", help="Set the number manually. ", dest="number"
+        "--number", help="Set the number manually. ", type=int, dest="number"
     )
     parser.add_argument(
         "--number-length",
         help="Set the number length. Will be ignored if --number-random is defined. ",
         choices=[1, 2, 3, 4],
-        dest="number",
+        dest="number_length",
         type=int,
-        required=True
+        required=True,
+    )
+    plate_group = parser.add_mutually_exclusive_group(required=True)
+    plate_group.add_argument(
+        "--plate-random",
+        help="Set the plate type to random",
+        dest="plate_random",
+        action="store_true",
+    )
+    plate_group.add_argument(
+        "--plate",
+        help="Set the plate type manually",
+        dest="plate",
+        choices=[1, 2, 3, 4, 5],
+        type=int,
     )
     parser.add_argument(
         "--count",
@@ -572,4 +594,44 @@ if __name__ == "__main__":
         required=True,
     )
     args = parser.parse_args()
-    print(args)
+    if args.issuing_office_random:
+        issuing_office_generator = _generate_random_office
+    else:
+        issuing_office_generator = lambda: args.issuing_office
+    if args.vehicle_class_random:
+        vehicle_class_generator = lambda: _generate_random_v_class_and_number(
+            args.vehicle_class_length
+        )
+    else:
+        if len(args.vehicle_class) > 0 and len(args.vehicle_class) < 4:
+            vehicle_class_generator = lambda: args.vehicle_class
+        else:
+            raise ValueError("Vehicle class has to be between 1 to 599")
+    if args.hiragana_random:
+        hiragana_generator = _generate_random_hiragana
+    else:
+        hiragana_generator = lambda: args.hiragana
+    if args.number_random:
+        number_generator = lambda: _generate_random_v_number(args.number_length)
+    else:
+        if args.number > 0 and args.number < 10000:
+            number_generator = lambda: args.number
+        else:
+            raise ValueError("Number has to be between 1 to 9999")
+    if args.plate_random:
+        plate_generator = _generate_random_plate
+    else:
+        plate_generator = lambda: args.plate
+    os.makedirs("./output", exist_ok=True)
+    for n in range(args.count):
+        p = Plate(
+            issuing_office_generator(),
+            vehicle_class_generator(),
+            hiragana_generator(),
+            number_generator(),
+            True,
+            True,
+            plate_generator(),
+        )
+        print(p)
+        p.generatePlate()
