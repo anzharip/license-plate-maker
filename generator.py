@@ -530,6 +530,7 @@ if __name__ == "__main__":
         help="Set the vehicle class length. Will be ignored if --vehicle-class is defined. ",
         choices=[1, 2, 3],
         dest="vehicle_class_length",
+        type=int,
         required=True,
     )
     hiragana_group = parser.add_mutually_exclusive_group(required=True)
@@ -560,6 +561,8 @@ if __name__ == "__main__":
         help="Set the number length. Will be ignored if --number-random is defined. ",
         choices=[1, 2, 3, 4],
         dest="number",
+        type=int,
+        required=True
     )
     parser.add_argument(
         "--count",
