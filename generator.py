@@ -566,7 +566,7 @@ if __name__ == "__main__":
     )
     parser.add_argument(
         "--number-length",
-        help="Set the number length. Will be ignored if --number-random is defined. ",
+        help="Set the number length. Will be ignored if --number is defined. ",
         choices=[1, 2, 3, 4],
         dest="number_length",
         type=int,
